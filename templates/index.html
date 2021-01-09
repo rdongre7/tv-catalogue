@@ -1,0 +1,163 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="author" content="colorlib.com">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,800" rel="stylesheet" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="../static/stylesheets/main.css?v=2" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+  <link rel="stylesheet" href="../static/stylesheets/justifiedGallery.min.css" />
+  <script src="../static/js/extension/jquery.justifiedGallery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+
+</head>
+
+<body>
+  <div id="load"></div>
+  <div id="contents">
+    <div class="s005">
+      <form>
+        <fieldset>
+          <legend>What skills would you like to develop today?</legend>
+          <div class="inner-form">
+            <div class="input-field">
+              <input class="form-control" id="choices-text-preset-values" type="text" placeholder="Type to search..." />
+              <button class="btn-search" type="button" onclick="init()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                  <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">
+                  </path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+    <div id="results" style="visibility: hidden; height: 0vh; transition: top 2s;">
+      <div id="inner"></div>
+    </div>
+    <script src="../static/js/extension/choices.js"></script>
+    <script>
+      var textPresetVal = new Choices('#choices-text-preset-values',
+        {
+          removeItemButton: true,
+        });
+
+    </script>
+    <script>
+
+      /*$().fancybox({
+        selector: '.images',
+        thumbs: {
+          autoStart: true
+        }
+      });*/
+
+      function init() {
+        var div = document.getElementById('inner');
+        while (div.firstChild) {
+          div.removeChild(div.firstChild);
+        }
+        var paras = document.getElementsByClassName("modal");
+
+        while (paras[0]) {
+          paras[0].parentNode.removeChild(paras[0]);
+        }
+        var x = document.getElementsByClassName("choices__item choices__item--selectable");
+        var types = [];
+        var tags = [];
+        for (var i = 0; i < x.length; i++) {
+          var tag = x.item(i).getAttribute("data-value");
+          console.log(tag);
+          if (tag == "anime" || tag == "manga" || tag == "webtoon" || tag == "fanfic" || tag == "fic" || tag == "tv show"
+            || tag == "english" || tag == "kdrama" || tag == "bollywood" || tag == "hollywood" || tag == "movie")
+            types.push(tag);
+          else
+            tags.push(tag);
+        }
+        var params = {
+          "types": types,
+          "tags": tags
+        }
+        var elems = document.getElementsByClassName('s005');
+        for (var i = 0; i < elems.length; i++) {
+          elems.item(i).classList.add("moved");
+        }
+        document.getElementById('results').style.visibility = 'visible';
+        document.getElementById('results').style.height = '70vh';
+        document.getElementById('results').style.background = 'white';
+        document.getElementById('results').style.top = '30vh';
+        $.ajax({
+          type: 'POST',
+          url: '/search',
+          data: JSON.stringify({ 'data': params }),
+          contentType: 'application/json',
+          success: function (response) {
+            console.log(response);
+            display(response);
+          }
+        })
+      }
+
+      function display(response) {
+        var elems = response.data;
+        for (var i = 0; i < elems.length; i++) {
+          console.log(elems[i]);
+          var src = elems[i].img;
+          var popup = document.createElement("div");
+          var id = "modal" + i;
+          popup.setAttribute("id", id);
+          popup.setAttribute("class", "modal");
+          //popup.classList.add("fancybox");
+          var setup = document.createElement("a");
+          setup.setAttribute("href", "#");
+          setup.setAttribute("rel", "modal:close");
+          setup.innerHTML = "Close";
+          var t1 = document.createElement("h2")
+          t1.innerHTML = elems[i].name;
+          var t2 = document.createElement("a");
+          t2.setAttribute("href", elems[i].url);
+          var t3 = document.createElement("p");
+          t3.innerHTML = elems[i].synopsis;
+          t3.appendChild(t2);
+          popup.appendChild(t1);
+          popup.appendChild(t2);
+          popup.appendChild(t3);
+          $("#id").modal({
+            fadeDuration: 100
+          });
+          document.getElementsByTagName('body')[0].appendChild(popup);
+          console.log(popup);
+          var fbElem = document.createElement("a");
+          //fbElem.classList.add("fancybox");
+          //fbElem.classList.add("images");
+          fbElem.setAttribute("href", "#" + id);
+          fbElem.setAttribute("rel", "modal:open");
+          //fbElem.setAttribute("data-src", "#animatedModal" + i);
+          //fbElem.setAttribute("data-animation-duration", "700")
+          fbElem.setAttribute("style", "border-radius: 25px")
+          img = document.createElement("img");
+          img.setAttribute("src", src);
+          img.setAttribute("alt", elems[i].name);
+          fbElem.appendChild(img);
+          console.log(fbElem);
+          document.getElementById('inner').appendChild(fbElem);
+        }
+        $("#inner").justifiedGallery({ rowHeight: 300, margin: 20 });
+      }
+
+
+    </script>
+  </div>
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+
+</html>

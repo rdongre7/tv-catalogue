@@ -1,0 +1,9 @@
+runtime: python37
+handlers: 
+  - url: /static
+    static_dir: static
+env_variables:
+  CLOUD_SQL_CONNECTION_NAME: anime-catalogue-280804:us-central1:myinstance
+  DB_USER: root
+  DB_PASS: yorozuya5
+  DB_NAME: animes
